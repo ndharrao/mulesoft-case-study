@@ -7,38 +7,54 @@ mediaType: application/json
 types:
   responseData: !include flightDetails.raml
 
-/flight/finder:
+/flights:
   get:
-    responses:
-      200:
-        body:
-          responseData
-  /united:
+    displayName: "Select flights by Airline and Destination"
+    queryParameters:
+      airline: 
+        type: string
+        required: true
+      destination:
+        type: string
+        required: true
+
+  /all:
+    get:
+      displayName: "Retrieve All available flights"
+      responses:
+        200:
+          body:
+            responseData
+  /of:
+    /united:
       get:
+        displayName: "Flights of United Only"
         responses:
           200:
             body:
               responseData
   
-  /american:
+    /american:
       get:
+        displayName: "Flights of American Only"
         responses:
           200:
             body:
               responseData
   
-  /delta:
+    /delta:
       get:
+        displayName: "Flights of DELTA Only"
         responses:
           200:
             body:
               responseData
 
-
-  /{airlineID}/{destination}:
-      get:
-        responses:
-          200:
-            body:
-              responseData[]
+    /{airlineID}/{destination}:
+        get:
+          displayName: "Flights by Airline and Destination "
+          responses:
+            200:
+              body:
+                responseData
           

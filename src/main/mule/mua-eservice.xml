@@ -132,15 +132,15 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="get:\flight\finder:mua-eservice-config">
+    <flow name="get:\flights\all:mua-eservice-config">
         <scatter-gather doc:name="Scatter-Gather" doc:id="0b86d80c-2990-4144-b9c0-c4c742afa6fb">
             <route>
                 <db:select doc:name="Retrieve American Flight Details" doc:id="52dc659a-ed35-4126-8274-aeaad3184db7" config-ref="American-Airline-DB" queryTimeoutUnit="DAYS">
                     <db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f;]]></db:sql>
                 </db:select>
-				<ee:transform doc:name="DB to JSON" doc:id="17aa6723-cba4-467f-a032-fedd39a2714d" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+                <ee:transform doc:name="DB to JSON" doc:id="17aa6723-cba4-467f-a032-fedd39a2714d">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload map ( payload01 , indexOfPayload01 ) -> {
@@ -151,14 +151,14 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 	airline: payload01.airlineName default "",
 	seatsAvailable: payload01.seatsAvailable default ""
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
+                    </ee:message>
+                </ee:transform>
             </route>
-			<route >
-				<wsc:consume operation="listAllFlights" doc:name="Retrieve Delta Flights" doc:id="5555ce10-bc19-48a6-8292-f4c7185e429b" config-ref="DELTA-SOAP-Connector"/>
-				<ee:transform doc:name="SOAP to JSON" doc:id="4e4c476b-c05e-4170-8460-6315c3dd5c75" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+            <route>
+                <wsc:consume operation="listAllFlights" doc:name="Retrieve Delta Flights" doc:id="5555ce10-bc19-48a6-8292-f4c7185e429b" config-ref="DELTA-SOAP-Connector" />
+                <ee:transform doc:name="SOAP to JSON" doc:id="4e4c476b-c05e-4170-8460-6315c3dd5c75">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ns ns0 http://soap.training.mulesoft.com/
 ---
@@ -170,14 +170,14 @@ payload.body.ns0#listAllFlightsResponse.*return map {
 	airline: $.airlineName default "",
 	seatsAvailable: $.emptySeats as String default ""		
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</route>
-			<route >
-				<http:request method="GET" doc:name="Retrieve UA Flights" doc:id="5a0797a9-4b23-4bba-a165-024f1fad706d" config-ref="United-REST-Connector" path="/united/flights"/>
-				<ee:transform doc:name="JSON to JSON" doc:id="0cdb07b3-ef7f-4b02-9d93-ba381267c20a" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+                    </ee:message>
+                </ee:transform>
+            </route>
+            <route>
+                <http:request method="GET" doc:name="Retrieve UA Flights" doc:id="5a0797a9-4b23-4bba-a165-024f1fad706d" config-ref="United-REST-Connector" path="/united/flights" />
+                <ee:transform doc:name="JSON to JSON" doc:id="0cdb07b3-ef7f-4b02-9d93-ba381267c20a">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload.flights map {
@@ -188,9 +188,9 @@ payload.flights map {
 	airline: $.airlineName default "",
 	seatsAvailable: $.emptySeats as String default ""
 }]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</route>
+                    </ee:message>
+                </ee:transform>
+            </route>
         </scatter-gather>
         <ee:transform doc:name="Transform Message" doc:id="93f373fc-89b6-4ebf-97d3-775aff3e459b">
             <ee:message>
@@ -208,7 +208,7 @@ flatten(array)]]></ee:set-payload>
     <flow name="get:\flight\finder\(airlineID)\(destination):mua-eservice-config">
         <logger level="INFO" message="get:\flight\finder\(airlineID)\(destination):mua-eservice-config" />
     </flow>
-    <flow name="get:\flight\finder\american:mua-eservice-config">
+    <flow name="get:\flights\of\american:mua-eservice-config">
         <db:select doc:name="Retrieve American Flights" doc:id="910bdfd3-f396-4e9c-828c-37881241a5fe" config-ref="American-Airline-DB" queryTimeoutUnit="HOURS">
             <db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f;]]></db:sql>
         </db:select>
@@ -229,11 +229,11 @@ payload map ( payload01 , indexOfPayload01 ) -> {
         </ee:transform>
         <logger level="INFO" message="get:\flight\finder\american:mua-eservice-config" />
     </flow>
-    <flow name="get:\flight\finder\delta:mua-eservice-config">
-        <wsc:consume operation="listAllFlights" doc:name="Retrieve Flights from Delta" doc:id="d5eecfdc-bce6-4693-a84b-d58e48f65187" config-ref="DELTA-SOAP-Connector"/>
-		<ee:transform doc:name="XML to JSON" doc:id="036b6423-843b-48d0-a864-ad628535917d" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+    <flow name="get:\flights\of\delta:mua-eservice-config">
+        <wsc:consume operation="listAllFlights" doc:name="Retrieve Flights from Delta" doc:id="d5eecfdc-bce6-4693-a84b-d58e48f65187" config-ref="DELTA-SOAP-Connector" />
+        <ee:transform doc:name="XML to JSON" doc:id="036b6423-843b-48d0-a864-ad628535917d">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ns ns0 http://soap.training.mulesoft.com/
 ---
@@ -246,17 +246,16 @@ payload.body.ns0#listAllFlightsResponse.*return map {
 	destination: $.destination default "",
 	airline: $.airlineName default "",
 	seatsAvailable: $.emptySeats as String default ""		
-}
-]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" message="get:\flight\finder\delta:mua-eservice-config" />
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="get:\flight\finder\delta:mua-eservice-config" />
     </flow>
-    <flow name="get:\flight\finder\united:mua-eservice-config">
-        <http:request method="GET" doc:name="Retrieve United Flights" doc:id="3b91f0a7-f798-499c-860d-7d4c93d3caa2" config-ref="United-REST-Connector" path="/united/flights"/>
-		<ee:transform doc:name="JSON to JSON" doc:id="005fa824-95e2-4abf-b8ce-bb9306290e53" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+    <flow name="get:\flights\of\united:mua-eservice-config">
+        <http:request method="GET" doc:name="Retrieve United Flights" doc:id="3b91f0a7-f798-499c-860d-7d4c93d3caa2" config-ref="United-REST-Connector" path="/united/flights" />
+        <ee:transform doc:name="JSON to JSON" doc:id="005fa824-95e2-4abf-b8ce-bb9306290e53">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload.flights map {
@@ -268,8 +267,20 @@ payload.flights map {
 	seatsAvailable: $.emptySeats as String default ""
 
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" message="get:\flight\finder\united:mua-eservice-config" />
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="get:\flight\finder\united:mua-eservice-config" />
+    </flow>
+    <flow name="get:\flights:mua-eservice-config">
+        <logger level="INFO" message="get:\flights:mua-eservice-config" />
+    </flow>
+    <flow name="get:\flights\of\(airlineID)\(destination):mua-eservice-config">
+        <ee:transform>
+            <ee:variables>
+                <ee:set-variable variableName="airlineID">attributes.uriParams.'airlineID'</ee:set-variable>
+                <ee:set-variable variableName="destination">attributes.uriParams.'destination'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="get:\flights\of\(airlineID)\(destination):mua-eservice-config" />
     </flow>
 </mule>
