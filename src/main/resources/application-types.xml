@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="DBResultArray" format="java">
+      <types:shape format="java" element="java.util.ArrayList"/>
+    </types:type>
+    <types:type name="UnitedFlightsReference" format="java">
+      <types:shape format="java" element="com.mule.bean.UnitedFlightDetail"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#93f373fc-89b6-4ebf-97d3-775aff3e459b">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="unitedFlights" type="UnitedFlightsReference"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#005fa824-95e2-4abf-b8ce-bb9306290e53">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="UnitedFlightsReference"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

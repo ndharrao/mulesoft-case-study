@@ -1,0 +1,44 @@
+#%RAML 1.0
+title: MUA-eService
+version: v1
+baseUri: http://mua.com
+mediaType: application/json
+
+types:
+  responseData: !include flightDetails.raml
+
+/flight/finder:
+  get:
+    responses:
+      200:
+        body:
+          responseData
+  /united:
+      get:
+        responses:
+          200:
+            body:
+              responseData
+  
+  /american:
+      get:
+        responses:
+          200:
+            body:
+              responseData
+  
+  /delta:
+      get:
+        responses:
+          200:
+            body:
+              responseData
+
+
+  /{airlineID}/{destination}:
+      get:
+        responses:
+          200:
+            body:
+              responseData[]
+          

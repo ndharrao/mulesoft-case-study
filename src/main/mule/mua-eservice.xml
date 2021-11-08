@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd">
+    <http:listener-config name="mua-eservice-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8082" />
+    </http:listener-config>
+    <apikit:config name="mua-eservice-config" api="mua-eservice.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <db:config name="American-Airline-DB" doc:name="Database Config" doc:id="be56151e-9f29-460b-8ca4-8da5f3a56770">
+        <db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+    </db:config>
+    <wsc:config name="DELTA-SOAP-Connector" doc:name="Web Service Consumer Config" doc:id="3c0ca028-13ca-479a-85c4-aef487440a73">
+        <wsc:connection wsdlLocation="http://mu.learn.mulesoft.com/delta?wsdl" service="TicketServiceService" port="TicketServicePort" address="http://mu.learn.mulesoft.com/delta" />
+    </wsc:config>
+    <http:request-config name="United-REST-Connector" doc:name="HTTP Request configuration" doc:id="2a720198-18cc-44c3-973c-6d3e01d434e8">
+        <http:request-connection host="mu.learn.mulesoft.com" />
+    </http:request-config>
+    <flow name="mua-eservice-main">
+        <http:listener config-ref="mua-eservice-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="mua-eservice-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="mua-eservice-console">
+        <http:listener config-ref="mua-eservice-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="mua-eservice-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\flight\finder:mua-eservice-config">
+        <scatter-gather doc:name="Scatter-Gather" doc:id="0b86d80c-2990-4144-b9c0-c4c742afa6fb">
+            <route>
+                <db:select doc:name="Retrieve American Flight Details" doc:id="52dc659a-ed35-4126-8274-aeaad3184db7" config-ref="American-Airline-DB" queryTimeoutUnit="DAYS">
+                    <db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f;]]></db:sql>
+                </db:select>
+            </route>
+            <route>
+                <wsc:consume operation="listAllFlights" doc:name="Retrieve DELTA Flights" doc:id="a426a145-c357-4769-aa02-b1db0f9c6a72" config-ref="DELTA-SOAP-Connector" target="deltaFlights" />
+            </route>
+            <route>
+                <http:request method="GET" doc:name="Retrieve United Flights" doc:id="af299ed8-35f0-42a6-8cd8-8868fc0951db" config-ref="United-REST-Connector" path="/united/flights" target="unitedFlights" />
+            </route>
+        </scatter-gather>
+        <ee:transform doc:name="Transform Message" doc:id="93f373fc-89b6-4ebf-97d3-775aff3e459b">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+//payload."0".payload map (payload01, dex) -> {
+//	date: payload01.takeOffDate as String default "",
+//	price: payload01.price default 0,
+//	origin: payload01.fromAirport default "",
+//	destination: payload01.toAirport default "",
+//	airline: payload01.airlineName default "",
+//	seatsAvailable: payload01.seatsAvailable default ""
+//	
+//}
+
+payload."1".payload map (payload01, dex) -> {
+	date: payload01.takeOffDate as String default "",
+	price: payload01.price default 0,
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	airline: payload01.airlineName default "",
+	seatsAvailable: payload01.seatsAvailable default ""
+	
+}
+
+
+
+//
+//payload map ( payload01 , indexOfPayload01 ) -> {
+//	date: payload01.takeOffDate as String default "",
+//	price: payload01.price default 0,
+//	origin: payload01.fromAirport default "",
+//	destination: payload01.toAirport default "",
+//	airline: payload01.airlineName default "",
+//	seatsAvailable: payload01.seatsAvailable default ""
+//}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\flight\finder\(airlineID)\(destination):mua-eservice-config">
+        <logger level="INFO" message="get:\flight\finder\(airlineID)\(destination):mua-eservice-config" />
+    </flow>
+    <flow name="get:\flight\finder\american:mua-eservice-config">
+        <db:select doc:name="Retrieve American Flights" doc:id="910bdfd3-f396-4e9c-828c-37881241a5fe" config-ref="American-Airline-DB" queryTimeoutUnit="HOURS">
+            <db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f;]]></db:sql>
+        </db:select>
+        <ee:transform doc:name="DB to JSON" doc:id="4297a0c3-7e3d-4f26-bf8b-429f56438713">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	date: payload01.takeOffDate as String default "",
+	price: payload01.price default 0,
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	airline: payload01.airlineName default "",
+	seatsAvailable: payload01.seatsAvailable default ""
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="get:\flight\finder\american:mua-eservice-config" />
+    </flow>
+    <flow name="get:\flight\finder\delta:mua-eservice-config">
+        <wsc:consume operation="listAllFlights" doc:name="Retrieve Flights from Delta" doc:id="d5eecfdc-bce6-4693-a84b-d58e48f65187" config-ref="DELTA-SOAP-Connector"/>
+		<ee:transform doc:name="XML to JSON" doc:id="036b6423-843b-48d0-a864-ad628535917d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+collection: {
+	returns: payload.body.ns0#listAllFlightsResponse.*return map {
+	
+			date: $.departureDate default "",
+			price: $.price default 0,
+			origin: $.origin default "",
+			destination: $.destination default "",
+			airline: $.airlineName default "",
+			seatsAvailable: $.emptySeats as String default ""	
+	
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="get:\flight\finder\delta:mua-eservice-config" />
+    </flow>
+    <flow name="get:\flight\finder\united:mua-eservice-config">
+        <http:request method="GET" doc:name="Retrieve United Flights" doc:id="3b91f0a7-f798-499c-860d-7d4c93d3caa2" config-ref="United-REST-Connector" path="/united/flights"/>
+		<ee:transform doc:name="JSON to JSON" doc:id="005fa824-95e2-4abf-b8ce-bb9306290e53" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+items: payload.flights map {
+		date: $.departureDate default "",
+		price: $.price default 0,
+		origin: $.origin default "",
+		destination: $.destination default "",
+		airline: $.airlineName default "",
+		seatsAvailable: $.emptySeats as String default ""
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="get:\flight\finder\united:mua-eservice-config" />
+    </flow>
+</mule>
