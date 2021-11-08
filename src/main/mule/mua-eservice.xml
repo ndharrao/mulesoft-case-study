@@ -138,50 +138,70 @@ output application/json
                 <db:select doc:name="Retrieve American Flight Details" doc:id="52dc659a-ed35-4126-8274-aeaad3184db7" config-ref="American-Airline-DB" queryTimeoutUnit="DAYS">
                     <db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f;]]></db:sql>
                 </db:select>
-            </route>
-            <route>
-                <wsc:consume operation="listAllFlights" doc:name="Retrieve DELTA Flights" doc:id="a426a145-c357-4769-aa02-b1db0f9c6a72" config-ref="DELTA-SOAP-Connector" target="deltaFlights" />
-            </route>
-            <route>
-                <http:request method="GET" doc:name="Retrieve United Flights" doc:id="af299ed8-35f0-42a6-8cd8-8868fc0951db" config-ref="United-REST-Connector" path="/united/flights" target="unitedFlights" />
-            </route>
-        </scatter-gather>
-        <ee:transform doc:name="Transform Message" doc:id="93f373fc-89b6-4ebf-97d3-775aff3e459b">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
+				<ee:transform doc:name="DB to JSON" doc:id="17aa6723-cba4-467f-a032-fedd39a2714d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-//payload."0".payload map (payload01, dex) -> {
-//	date: payload01.takeOffDate as String default "",
-//	price: payload01.price default 0,
-//	origin: payload01.fromAirport default "",
-//	destination: payload01.toAirport default "",
-//	airline: payload01.airlineName default "",
-//	seatsAvailable: payload01.seatsAvailable default ""
-//	
-//}
-
-payload."1".payload map (payload01, dex) -> {
+payload map ( payload01 , indexOfPayload01 ) -> {
 	date: payload01.takeOffDate as String default "",
 	price: payload01.price default 0,
 	origin: payload01.fromAirport default "",
 	destination: payload01.toAirport default "",
 	airline: payload01.airlineName default "",
 	seatsAvailable: payload01.seatsAvailable default ""
-	
-}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+            </route>
+			<route >
+				<wsc:consume operation="listAllFlights" doc:name="Retrieve Delta Flights" doc:id="5555ce10-bc19-48a6-8292-f4c7185e429b" config-ref="DELTA-SOAP-Connector"/>
+				<ee:transform doc:name="SOAP to JSON" doc:id="4e4c476b-c05e-4170-8460-6315c3dd5c75" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+payload.body.ns0#listAllFlightsResponse.*return map {
+	date: $.departureDate default "",
+	price: $.price default 0,
+	origin: $.origin default "",
+	destination: $.destination default "",
+	airline: $.airlineName default "",
+	seatsAvailable: $.emptySeats as String default ""		
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<http:request method="GET" doc:name="Retrieve UA Flights" doc:id="5a0797a9-4b23-4bba-a165-024f1fad706d" config-ref="United-REST-Connector" path="/united/flights"/>
+				<ee:transform doc:name="JSON to JSON" doc:id="0cdb07b3-ef7f-4b02-9d93-ba381267c20a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.flights map {
+	date: $.departureDate default "",
+	price: $.price default 0,
+	origin: $.origin default "",
+	destination: $.destination default "",
+	airline: $.airlineName default "",
+	seatsAvailable: $.emptySeats as String default ""
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+        </scatter-gather>
+        <ee:transform doc:name="Transform Message" doc:id="93f373fc-89b6-4ebf-97d3-775aff3e459b">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var array = [payload."0".payload, payload."1".payload, payload."2".payload]
 
+---
+//[payload."0".payload, payload."1".payload, payload."2".payload]
 
-
-//
-//payload map ( payload01 , indexOfPayload01 ) -> {
-//	date: payload01.takeOffDate as String default "",
-//	price: payload01.price default 0,
-//	origin: payload01.fromAirport default "",
-//	destination: payload01.toAirport default "",
-//	airline: payload01.airlineName default "",
-//	seatsAvailable: payload01.seatsAvailable default ""
-//}]]></ee:set-payload>
+flatten(array)]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
@@ -217,18 +237,17 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 output application/json
 ns ns0 http://soap.training.mulesoft.com/
 ---
-collection: {
-	returns: payload.body.ns0#listAllFlightsResponse.*return map {
-	
-			date: $.departureDate default "",
-			price: $.price default 0,
-			origin: $.origin default "",
-			destination: $.destination default "",
-			airline: $.airlineName default "",
-			seatsAvailable: $.emptySeats as String default ""	
-	
-	}
-}]]></ee:set-payload>
+
+payload.body.ns0#listAllFlightsResponse.*return map {
+
+	date: $.departureDate default "",
+	price: $.price default 0,
+	origin: $.origin default "",
+	destination: $.destination default "",
+	airline: $.airlineName default "",
+	seatsAvailable: $.emptySeats as String default ""		
+}
+]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" message="get:\flight\finder\delta:mua-eservice-config" />
@@ -240,13 +259,13 @@ collection: {
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-items: payload.flights map {
-		date: $.departureDate default "",
-		price: $.price default 0,
-		origin: $.origin default "",
-		destination: $.destination default "",
-		airline: $.airlineName default "",
-		seatsAvailable: $.emptySeats as String default ""
+payload.flights map {
+	date: $.departureDate default "",
+	price: $.price default 0,
+	origin: $.origin default "",
+	destination: $.destination default "",
+	airline: $.airlineName default "",
+	seatsAvailable: $.emptySeats as String default ""
 
 }]]></ee:set-payload>
 			</ee:message>
