@@ -337,8 +337,11 @@ ns ns0 http://soap.training.mulesoft.com/
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
+skipNullOn="everywhere"
+
 ns ns0 http://soap.training.mulesoft.com/
 ---
+
 payload.body.ns0#findFlightResponse.*return map {
 	date: $.departureDate default "",
 	price: $.price default 0,
