@@ -6,6 +6,7 @@ mediaType: application/json
 
 types:
   responseData: !include flightDetails.raml
+  requestMultipleAirlines: !include flightsMultipleAirlines.raml
 
 /flights:
   get:
@@ -59,11 +60,14 @@ types:
             body:
               responseData
 
-    /{airlineID}/{destination}:
-        get:
-          displayName: "Flights by Airline and Destination "
-          responses:
-            200:
-              body:
-                responseData
+  /airlines:
+    post:
+      body:
+        application/json:
+          type: requestMultipleAirlines
+      displayName: "Get flights to your destination from multiple airlines"
+      responses:
+        200:
+          body:
+            responseData
           

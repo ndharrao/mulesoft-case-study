@@ -48,4 +48,13 @@ type: string]]></types:shape>
       </types:input-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#98eaf35e-8579-4e09-991a-6ba26e4d90cd">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="UnitedFlightsReference"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
