@@ -7,6 +7,10 @@
     <types:type name="UnitedFlightsReference" format="java">
       <types:shape format="java" element="com.mule.bean.UnitedFlightDetail"/>
     </types:type>
+    <types:type name="string" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#93f373fc-89b6-4ebf-97d3-775aff3e459b">
     <types:processor-declaration>
@@ -27,6 +31,15 @@
     </types:processor-declaration>
   </types:enrichment>
   <types:enrichment select="#0cdb07b3-ef7f-4b02-9d93-ba381267c20a">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="UnitedFlightsReference"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#8ed7a3a1-cc96-476b-a4a9-3a3737ad91a0">
     <types:processor-declaration>
       <types:input-event>
         <types:message>

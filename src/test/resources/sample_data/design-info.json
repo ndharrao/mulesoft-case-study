@@ -5,6 +5,12 @@
     },
     "036b6423-843b-48d0-a864-ad628535917d": {
       "payload": "sample_data/java.dwl"
+    },
+    "a97b42fa-bfbb-414f-947f-ef4d342b5ddb": {
+      "vars-destination": "sample_data/defaultstringtype.dwl"
+    },
+    "7e0a7089-a991-4c76-aa16-2d3475a6b0f1": {
+      "vars-destination": "sample_data/defaultstringtype_1.dwl"
     }
   }
 }
