@@ -17,6 +17,15 @@ types:
       destination:
         type: string
         required: true
+    responses:
+      200:
+        body:
+          responseData  
+      404:
+        body:
+          application/json:
+            example:
+              {"message" : "Flight Not Found"}
 
   /all:
     get:

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
-http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd">
     <http:listener-config name="mua-eservice-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8082" />
     </http:listener-config>
@@ -9,9 +8,9 @@ http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mu
         <db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
     </db:config>
     <wsc:config name="DELTA-SOAP-Connector" doc:name="Web Service Consumer Config" doc:id="3c0ca028-13ca-479a-85c4-aef487440a73">
-        <wsc:connection wsdlLocation="http://mu.learn.mulesoft.com/delta?wsdl" service="TicketServiceService" port="TicketServicePort" address="http://mu.learn.mulesoft.com/delta" >
-			<wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
-		</wsc:connection>
+        <wsc:connection wsdlLocation="http://mu.learn.mulesoft.com/delta?wsdl" service="TicketServiceService" port="TicketServicePort" address="http://mu.learn.mulesoft.com/delta">
+            <wsc:web-service-security actor="http://schemas.xmlsoap.org/soap/actor/next" />
+        </wsc:connection>
     </wsc:config>
     <http:request-config name="United-REST-Connector" doc:name="HTTP Request configuration" doc:id="2a720198-18cc-44c3-973c-6d3e01d434e8">
         <http:request-connection host="mu.learn.mulesoft.com" />
@@ -272,21 +271,21 @@ payload.flights map {
         <logger level="INFO" message="get:\flight\finder\united:mua-eservice-config" />
     </flow>
     <flow name="get:\flights:mua-eservice-config">
-        <set-variable value="#[message.attributes.queryParams.airline]" doc:name="Set Variable" doc:id="5f40a52c-4698-4915-833f-754c2cb0f76e" variableName="airline"/>
-		<set-variable value="#[message.attributes.queryParams.destination]" doc:name="Set Variable" doc:id="04278b09-1a0c-48a4-bcb0-2131bb48f9ff" variableName="destination"/>
-		<choice doc:name="Choice" doc:id="59395258-92ef-4d48-be3c-e74792183972" >
-			<when expression='vars.airline == "United"'>
-				<try doc:name="Try" doc:id="6bfb5de4-e6bf-45d9-bea7-93e3e82ab8ee" >
-					<http:request method="GET" doc:name="Retrieve United Flights" doc:id="14c4e99a-77e4-42fe-8154-b2fa2533eb9b" config-ref="United-REST-Connector" path="united/flights/{destination}">
-					<http:query-params><![CDATA[#[output application/java
+        <set-variable value="#[message.attributes.queryParams.airline]" doc:name="Set Variable" doc:id="5f40a52c-4698-4915-833f-754c2cb0f76e" variableName="airline" />
+        <set-variable value="#[message.attributes.queryParams.destination]" doc:name="Set Variable" doc:id="04278b09-1a0c-48a4-bcb0-2131bb48f9ff" variableName="destination" />
+        <choice doc:name="Choice" doc:id="59395258-92ef-4d48-be3c-e74792183972">
+            <when expression="vars.airline == &quot;United&quot;">
+                <try doc:name="Try" doc:id="6bfb5de4-e6bf-45d9-bea7-93e3e82ab8ee">
+                    <http:request method="GET" doc:name="Retrieve United Flights" doc:id="14c4e99a-77e4-42fe-8154-b2fa2533eb9b" config-ref="United-REST-Connector" path="united/flights/{destination}">
+                        <http:query-params><![CDATA[#[output application/java
 ---
 {
 	"destination" : vars.destination
 }]]]></http:query-params>
-				</http:request>
-					<ee:transform doc:name="Transform Message" doc:id="8ed7a3a1-cc96-476b-a4a9-3a3737ad91a0">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+                    </http:request>
+                    <ee:transform doc:name="Transform Message" doc:id="8ed7a3a1-cc96-476b-a4a9-3a3737ad91a0">
+                        <ee:message>
+                            <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload.flights map {
@@ -298,11 +297,103 @@ payload.flights map {
 	seatsAvailable: $.emptySeats as String default ""
 
 }]]></ee:set-payload>
+                        </ee:message>
+                    </ee:transform>
+                    <error-handler>
+                        <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f128e425-f563-43a6-ac5e-b0315a9ebaa8">
+                            <ee:transform doc:name="Transform Message" doc:id="1da3fcf5-41eb-49bf-b647-eeaa19cbf522">
+                                <ee:message>
+                                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error : "Destination flights not found",
+	destination: vars.destination,
+	airline: vars.airline
+}]]></ee:set-payload>
+                                </ee:message>
+                            </ee:transform>
+                        </on-error-propagate>
+                    </error-handler>
+                </try>
+            </when>
+            <when expression="vars.airline == &quot;Delta&quot;">
+                <ee:transform doc:name="Transform Message" doc:id="7e0a7089-a991-4c76-aa16-2d3475a6b0f1">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://soap.training.mulesoft.com/
+---
+{
+	ns0#findFlight: {
+		destination: vars.destination
+	}
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <try doc:name="Try" doc:id="f2c7d997-d517-4834-89bf-569b594c2205" >
+					<wsc:consume doc:name="Consume" doc:id="acb537e6-d4a6-4747-84b8-59684e4f4550" config-ref="DELTA-SOAP-Connector" operation="findFlight" />
+					<ee:transform doc:name="Transform Message" doc:id="32ad1a04-6b3a-45f9-8b37-6a9db695ff10">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+payload.body.ns0#findFlightResponse.*return map {
+	date: $.departureDate default "",
+	price: $.price default 0,
+	origin: $.origin default "",
+	destination: $.destination default "",
+	airline: $.airlineName default "",
+	seatsAvailable: $.emptySeats as String default ""		
+}]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9e5bf785-dc4f-4514-8713-3d6cde688777" >
+							<ee:transform doc:name="Transform Message" doc:id="09d46b83-a9b6-4b3c-9200-10a7e1dcb0e5" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error : "Destination flights not found",
+	destination: vars.destination,
+	airline: vars.airline
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-propagate>
+					</error-handler>
+				</try>
+            </when>
+            <when expression='vars.airline == "American"'>
+				<ee:transform doc:name="Transform Message" doc:id="571770fe-4626-433d-9792-a7a40abd9d98" />
+				<try doc:name="Try" doc:id="10cbf1d0-b708-4c50-89b7-7fb6841185db" >
+					<db:select doc:name="American Flights" doc:id="49095e40-7800-4fff-99ea-3147a54fd74b" config-ref="American-Airline-DB">
+					<db:sql><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f where toAirport = :destination;]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+  'destination' : vars.destination
+}]]]></db:input-parameters>
+				</db:select>
+					<ee:transform doc:name="Transform Message" doc:id="c3b4e174-e5d8-4996-82ee-38214c6bdad0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	date: payload01.takeOffDate as String default "",
+	price: payload01.price default 0,
+	origin: payload01.fromAirport default "",
+	destination: payload01.toAirport default "",
+	airline: payload01.airlineName default "",
+	seatsAvailable: payload01.seatsAvailable default ""
+}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 					<error-handler >
-						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f128e425-f563-43a6-ac5e-b0315a9ebaa8" >
-							<ee:transform doc:name="Transform Message" doc:id="1da3fcf5-41eb-49bf-b647-eeaa19cbf522" >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7284eff2-68f8-425f-bee8-272a436b70a6" >
+							<ee:transform doc:name="Transform Message" doc:id="752cb02f-a26a-43af-9296-0266fd125fac" >
 								<ee:message >
 									<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -318,43 +409,10 @@ output application/json
 					</error-handler>
 				</try>
 			</when>
-			<when expression='vars.airline == "Delta"'>
-				<ee:transform doc:name="Transform Message" doc:id="7e0a7089-a991-4c76-aa16-2d3475a6b0f1" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/xml
-ns ns0 http://soap.training.mulesoft.com/
----
-{
-	ns0#findFlight: {
-		destination: vars.destination
-	}
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<wsc:consume doc:name="Consume" doc:id="acb537e6-d4a6-4747-84b8-59684e4f4550" config-ref="DELTA-SOAP-Connector" operation="findFlight">
-				</wsc:consume>
-				<ee:transform doc:name="Transform Message" doc:id="32ad1a04-6b3a-45f9-8b37-6a9db695ff10" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-ns ns0 http://soap.training.mulesoft.com/
----
-payload.body.ns0#findFlightResponse.*return map {
-	date: $.departureDate default "",
-	price: $.price default 0,
-	origin: $.origin default "",
-	destination: $.destination default "",
-	airline: $.airlineName default "",
-	seatsAvailable: $.emptySeats as String default ""		
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="ff3bd4ca-9e4e-4ebe-ba97-77d0bc23cda3">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+			<otherwise>
+                <ee:transform doc:name="Transform Message" doc:id="ff3bd4ca-9e4e-4ebe-ba97-77d0bc23cda3">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -365,16 +423,32 @@ output application/json
 	airline: "Invalid Flight Code",
 	seatsAvailable: ""
 }]]></ee:set-payload>
+                    </ee:message>
+                </ee:transform>
+                <logger level="INFO" doc:name="Logger" doc:id="aee040ac-1401-4b28-aea2-2e01c5f0b679" message="#[message.attributes.queryParams.airline]" />
+            </otherwise>
+        </choice>
+        <logger level="INFO" message="#[payload]" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b38be25d-2f61-45b6-af5b-5ad1d9b87730" >
+				<ee:transform doc:name="Transform Message" doc:id="46aa2c5c-465a-4e67-bcd1-b7d0d524d6af" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error : "Destination flights not found",
+	destination: vars.destination,
+	airline: vars.airline
+}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="INFO" doc:name="Logger" doc:id="aee040ac-1401-4b28-aea2-2e01c5f0b679" message="#[message.attributes.queryParams.airline]"/>
-			</otherwise>
-		</choice>
-		<logger level="INFO" message="#[payload]" />
+			</on-error-propagate>
+		</error-handler>
     </flow>
-	<flow name="get:\flights\of\(airlineID)\(destination):mua-eservice-config">
-        <set-variable value="#[message.attributes.queryParams]" doc:name="Set ARILINE Variable" doc:id="a7e4638d-2c22-4f33-8b70-eb0c989f9f76" variableName="airline"/>
-		<ee:transform>
+    <flow name="get:\flights\of\(airlineID)\(destination):mua-eservice-config">
+        <set-variable value="#[message.attributes.queryParams]" doc:name="Set ARILINE Variable" doc:id="a7e4638d-2c22-4f33-8b70-eb0c989f9f76" variableName="airline" />
+        <ee:transform>
             <ee:variables>
                 <ee:set-variable variableName="airlineID">attributes.uriParams.'airlineID'</ee:set-variable>
                 <ee:set-variable variableName="destination">attributes.uriParams.'destination'</ee:set-variable>
