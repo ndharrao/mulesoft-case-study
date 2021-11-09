@@ -275,40 +275,18 @@ payload.flights map {
         <set-variable value="#[message.attributes.queryParams.airline]" doc:name="Set Variable" doc:id="5f40a52c-4698-4915-833f-754c2cb0f76e" variableName="airline"/>
 		<set-variable value="#[message.attributes.queryParams.destination]" doc:name="Set Variable" doc:id="04278b09-1a0c-48a4-bcb0-2131bb48f9ff" variableName="destination"/>
 		<choice doc:name="Choice" doc:id="59395258-92ef-4d48-be3c-e74792183972" >
-			<when expression='#[vars.airline == "American"]'>
-				<db:select doc:name="Retrieve American" doc:id="a5149b1d-82f3-4562-b746-57ea80d8d48d" config-ref="American-Airline-DB">
-					<db:sql ><![CDATA[select airlineName, toAirport , fromAirport, takeOffDate, price, seatsAvailable from flights f where toAirport=:destination;]]></db:sql>
-					<db:input-parameters ><![CDATA[#[{ 
-	destination: vars.destination
-}]]]></db:input-parameters>
-				</db:select>
-				<ee:transform doc:name="Transform Message" doc:id="342e99a9-0b27-40f8-b079-ee30f4fa9c47" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload map ( payload01 , indexOfPayload01 ) -> {
-	date: payload01.takeOffDate as String default "",
-	price: payload01.price default 0,
-	origin: payload01.fromAirport default "",
-	destination: payload01.toAirport default "",
-	airline: payload01.airlineName default "",
-	seatsAvailable: payload01.seatsAvailable default ""
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</when>
 			<when expression='vars.airline == "United"'>
-				<http:request method="GET" doc:name="Retrieve United Flights" doc:id="14c4e99a-77e4-42fe-8154-b2fa2533eb9b" config-ref="United-REST-Connector" path="united/flights/">
-					<http:query-params ><![CDATA[#[output application/java
+				<try doc:name="Try" doc:id="6bfb5de4-e6bf-45d9-bea7-93e3e82ab8ee" >
+					<http:request method="GET" doc:name="Retrieve United Flights" doc:id="14c4e99a-77e4-42fe-8154-b2fa2533eb9b" config-ref="United-REST-Connector" path="united/flights/{destination}">
+					<http:query-params><![CDATA[#[output application/java
 ---
 {
 	"destination" : vars.destination
 }]]]></http:query-params>
 				</http:request>
-				<ee:transform doc:name="Transform Message" doc:id="8ed7a3a1-cc96-476b-a4a9-3a3737ad91a0" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+					<ee:transform doc:name="Transform Message" doc:id="8ed7a3a1-cc96-476b-a4a9-3a3737ad91a0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload.flights map {
@@ -322,6 +300,23 @@ payload.flights map {
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f128e425-f563-43a6-ac5e-b0315a9ebaa8" >
+							<ee:transform doc:name="Transform Message" doc:id="1da3fcf5-41eb-49bf-b647-eeaa19cbf522" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error : "Destination flights not found",
+	destination: vars.destination,
+	airline: vars.airline
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-propagate>
+					</error-handler>
+				</try>
 			</when>
 			<when expression='vars.airline == "Delta"'>
 				<ee:transform doc:name="Transform Message" doc:id="7e0a7089-a991-4c76-aa16-2d3475a6b0f1" >
@@ -375,7 +370,7 @@ output application/json
 				<logger level="INFO" doc:name="Logger" doc:id="aee040ac-1401-4b28-aea2-2e01c5f0b679" message="#[message.attributes.queryParams.airline]"/>
 			</otherwise>
 		</choice>
-		<logger level="TRACE" message="get:\flights:mua-eservice-config" />
+		<logger level="INFO" message="#[payload]" />
     </flow>
 	<flow name="get:\flights\of\(airlineID)\(destination):mua-eservice-config">
         <set-variable value="#[message.attributes.queryParams]" doc:name="Set ARILINE Variable" doc:id="a7e4638d-2c22-4f33-8b70-eb0c989f9f76" variableName="airline"/>
